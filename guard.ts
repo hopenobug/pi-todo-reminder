@@ -68,9 +68,9 @@ export function shouldRemind(
 	return { remind: true, nextSignature: sig, reason: undefined };
 }
 
-/** Render one reminder line: `- #3 (in_progress) subject`. */
+/** Render one task line: `- #2 写测试` (group header carries the status). */
 function formatTaskLine(t: Task): string {
-	return `- #${t.id} (${t.status}) ${t.subject}`;
+	return `- #${t.id} ${t.subject}`;
 }
 
 /**
@@ -78,22 +78,35 @@ function formatTaskLine(t: Task): string {
  * started), then pending, each group by id. `renderReminderContent` is only
  * called when `shouldRemind` returned remind=true, i.e. the list is non-empty.
  */
-export function renderReminderContent(tasks: readonly Task[]): string {
+export function renderReminderContent(tasks: readonly Task[], includeCodemodeHint = false): string {
 	const inProgress = incompleteTasks(tasks)
 		.filter((t) => t.status === "in_progress")
 		.sort((a, b) => a.id - b.id);
 	const pending = incompleteTasks(tasks)
 		.filter((t) => t.status === "pending")
 		.sort((a, b) => a.id - b.id);
+	const taskSection: string[] = [];
+	if (inProgress.length > 0) {
+		taskSection.push("进行中：", ...inProgress.map(formatTaskLine));
+	}
+	if (pending.length > 0) {
+		taskSection.push("待办：", ...pending.map(formatTaskLine));
+	}
+	const requirements: string[] = [];
+	if (includeCodemodeHint) {
+		requirements.push("能用 codemode 批量完成的步骤，优先用 codemode 一次完成，而不是逐个调用工具。");
+	}
+	requirements.push("如果某个任务被阻塞或无法继续，说明原因并用 todo 工具记录（如 blockedBy 或 metadata）。");
+	const numbered = requirements.map((r, i) => `${i + 1}. ${r}`);
+	numbered.push(
+		`${numbered.length + 1}. 如果判断不应再自动续跑（如用户已接管或要求停止、任务受阻），请在回复最后一行输出 \`<!-- ${REMINDER_STOP_MARKER} -->\`，系统将停止提醒；否则不要输出。`,
+	);
 	return [
 		"[自动提醒] 本次运行已结束，但 todo 列表仍有未完成任务，请继续执行：",
 		"",
-		...[...inProgress, ...pending].map(formatTaskLine),
+		...taskSection,
 		"",
 		"要求：",
-		"1. 按 todo 工具的工作流继续：一次只把一个任务置为 in_progress，完成后立即 update 为 completed。",
-		"2. 全部任务完成前不要停止。",
-		"3. 如果某个任务被阻塞或无法继续，不要静默结束——说明原因，并用 todo 工具记录（如 blockedBy 或 metadata）。",
-		`4. 如果你判断不应再自动续跑（例如用户已手动接管或要求停止、或任务因外部原因被阻塞），请在回复的最后一行单独输出 \`<!-- ${REMINDER_STOP_MARKER} -->\`（原样输出，含注释符号），系统将停止自动提醒；否则不要输出该标记。`,
+		...numbered,
 	].join("\n");
 }

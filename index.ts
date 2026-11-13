@@ -43,6 +43,7 @@ import {
 } from "./guard.ts";
 
 const TODO_TOOL_NAME = "todo";
+const CODEMODE_TOOL_NAME = "codemode";
 const REMINDER_CUSTOM_TYPE = "pi-todo-reminder";
 
 /** rpiv-todo's TaskDetails.tasks, read from the ToolResultMessage envelope. */
@@ -150,7 +151,7 @@ export default function (pi: ExtensionAPI) {
 			}
 			return;
 		}
-		const content = renderReminderContent(slot.tasks);
+		const content = renderReminderContent(slot.tasks, pi.getActiveTools().includes(CODEMODE_TOOL_NAME));
 		try {
 			// ExtensionAPI.sendMessage is fire-and-forget (void); triggerTurn
 			// starts the follow-up run while idle. Record the signature before

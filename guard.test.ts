@@ -98,12 +98,27 @@ describe("shouldRemind", () => {
 });
 
 describe("renderReminderContent", () => {
-	it("lists in_progress before pending with id/status/subject lines", () => {
+	it("lists in_progress before pending with group headers and id/subject lines", () => {
 		const content = renderReminderContent([t(5, "pending", "写文档"), t(2, "in_progress", "写测试"), t(9, "pending", "发布")]);
-		expect(content).toContain("- #2 (in_progress) 写测试");
-		expect(content.indexOf("#2")).toBeLessThan(content.indexOf("#5"));
+		expect(content).toContain("- #2 写测试");
+		expect(content).toContain("进行中：");
+		expect(content).toContain("待办：");
+		expect(content.indexOf("进行中：")).toBeLessThan(content.indexOf("#2"));
+		expect(content.indexOf("#2")).toBeLessThan(content.indexOf("待办："));
+		expect(content.indexOf("待办：")).toBeLessThan(content.indexOf("#5"));
 		expect(content.indexOf("#5")).toBeLessThan(content.indexOf("#9"));
 		expect(content).toContain("请继续执行");
+	});
+
+	it("omits an empty group section", () => {
+		const content = renderReminderContent([t(1, "pending")]);
+		expect(content).not.toContain("进行中：");
+		expect(content).toContain("待办：");
+	});
+
+	it("includes the codemode efficiency hint only when the codemode tool is available", () => {
+		expect(renderReminderContent([t(1, "pending"), t(2, "in_progress")], true)).toContain("codemode");
+		expect(renderReminderContent([t(1, "pending")], false)).not.toContain("codemode");
 	});
 
 	it("includes the stop-marker instruction for the model to judge continuation", () => {
