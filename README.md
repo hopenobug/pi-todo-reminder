@@ -2,6 +2,8 @@
 
 Pi 扩展：当一次 agent 运行**真正结束**、而 todo 列表里还有未完成任务时，自动注入一条提醒消息并触发后续一轮，让 agent 继续干活。
 
+**这个扩展是为 `rpiv-todo` 写的**：它依赖 `rpiv-todo` 的 `todo` 工具产生任务数据，脱离 `rpiv-todo` 不工作。
+
 解决的问题很具体：agent 经常在 todo 没做完时就收尾（"我先完成了前两步"），需要人再催一句。这个扩展在运行 settle 时替人补这一句。
 
 ## 行为
@@ -46,7 +48,13 @@ Pi 扩展：当一次 agent 运行**真正结束**、而 todo 列表里还有未
 
 ## 安装
 
-把目录放到 Pi 的扩展目录下即可（例如 `~/.pi/agent/extensions/pi-todo-reminder`）。`package.json` 的 `pi.extensions` 已指向 `./index.ts`。
+从 GitHub 安装：
+
+```bash
+pi install git:github.com/hopenobug/pi-todo-reminder
+```
+
+或者把目录放到 Pi 的扩展目录下即可（例如 `~/.pi/agent/extensions/pi-todo-reminder`）。`package.json` 的 `pi.extensions` 已指向 `./index.ts`。
 
 ## 开发
 
